@@ -1,0 +1,68 @@
+{
+  "expo": {
+    "name": "Addis",
+    "slug": "addis-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/addis-logo.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1e3a8a"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.addis.app",
+      "buildNumber": "1.0.0"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1e3a8a"
+      },
+      "package": "com.addis.app",
+      "versionCode": 1,
+      "edgeToEdgeEnabled": true,
+      "googleServicesFile": "./google-services.json"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "origin": "https://addis.com"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#1e3a8a",
+          "defaultChannel": "default"
+        }
+      ],
+      "expo-local-authentication",
+      "expo-secure-store",
+      "expo-updates"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "tsconfigPaths": true
+    },
+    "extra": {
+      "router": {
+        "origin": "https://addis.com"
+      },
+      "eas": {
+        "projectId": "your-project-id"
+      }
+    }
+  }
+}

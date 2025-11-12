@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: addis-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: addis
+    volumes:
+      - mongodb_data:/data/db
+      - ./backend/mongodb-init.js:/docker-entrypoint-initdb.d/init.js:ro
+    networks:
+      - addis-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: addis-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - addis-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: addis-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      MONGO_URI: mongodb://admin:admin123@mongodb:27017/addis?authSource=admin
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      SESSION_SECRET: your-session-secret-change-this-in-production
+      VTPASS_API_KEY: ${VTPASS_API_KEY}
+      VTPASS_PUBLIC_KEY: ${VTPASS_PUBLIC_KEY}
+      VTPASS_SECRET_KEY: ${VTPASS_SECRET_KEY}
+      VTPASS_BASE_URL: ${VTPASS_BASE_URL}
+      VTPASS_USERNAME: ${VTPASS_USERNAME}
+      MONNIFY_API_KEY: ${MONNIFY_API_KEY}
+      MONNIFY_SECRET_KEY: ${MONNIFY_SECRET_KEY}
+      MONNIFY_BASE_URL: ${MONNIFY_BASE_URL}
+      MONNIFY_CONTRACT_CODE: ${MONNIFY_CONTRACT_CODE}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    depends_on:
+      - mongodb
+      - redis
+    volumes:
+      - ./backend/logs:/app/logs
+      - ./backend/uploads:/app/uploads
+    networks:
+      - addis-network
+
+  # Admin Panel
+  admin-panel:
+    build:
+      context: ./admin-panel
+      dockerfile: Dockerfile
+    container_name: addis-admin-panel
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    environment:
+      REACT_APP_API_URL: http://localhost:5000
+      REACT_APP_ENV: production
+    depends_on:
+      - backend
+    networks:
+      - addis-network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: addis-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - backend
+      - admin-panel
+    networks:
+      - addis-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  addis-network:
+    driver: bridge
